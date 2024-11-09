@@ -1,0 +1,74 @@
+version: '3'
+networks:
+  backend-network:
+    driver: overlay
+  frontend-network:
+    driver: overlay
+services:
+  frontend:
+    image: localhost:5000/frontend-image:latest
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "3003:3003" 
+    networks:
+      - frontend-network
+
+  backend1:  
+    image: localhost:5000/backend-image:latest
+    env_file:
+      - ./backend/.env  
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/chat_real_time_application 
+      - RABBITMQ_URL=amqp://rabbitmq:5672 
+    ports:
+      - "3001:3000"  
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - backend-network
+
+  backend2: 
+    image: localhost:5000/backend-image:latest
+    env_file:
+      - ./backend/.env  
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/chat_real_time_application 
+      - RABBITMQ_URL=amqp://rabbitmq:5672 
+    ports:
+      - "3002:3000"  
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - backend-network
+
+#rabbit mq ket noi nhan tin 
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"  
+      - "15672:15672" 
+    networks:
+      - backend-network      
+#can bang tai nginx
+  nginx:
+    image: localhost:5000/nginx-image:latest
+    ports:
+      - "80:80"
+    networks:
+      - backend-network
+    depends_on:
+      - backend1
+      - backend2
+#database
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - backend-network
+
