@@ -1,80 +1,111 @@
+# 💬 Website Chat Application 
+📌 *[Xem bản tiếng Việt](README_vi.md)*
 
-# Hướng Dẫn Triển khai và demo hệ thống chat real time với docker , docker swarm 
-Báo Cáo Giữa Kỳ với node js 
+## 📌 Introduction
+This chat website not only provides messaging functionality but is also designed to enhance deployment capabilities with **Docker Swarm**, **RabbitMQ**, and **Nginx Load Balancing**, ensuring high performance and scalability.
 
-Mssv_Họ và tên
+## 🎯 Objectives
+- Provide a simple yet efficient chat platform.
+- Package frontend and backend applications into images.
+- Improve system scalability using **Docker Swarm**.
+- Ensure performance and stability through **RabbitMQ** and **Nginx Load Balancer**.
 
-52100820_Nguyễn Lâm Thành Long
+## 🛠️ Technologies Used
+### 💻 Frontend
+- **ReactJS** + **Vite**: High performance, optimized page load speed.
+- **Socket.IO Client**: Real-time communication.
+- **Styled-Components**: Flexible and maintainable CSS management.
 
-52200044_ Lê Tùng Dương
+### 🖥 Backend
+- **Node.js**: Builds APIs and handles server logic.
+- **Mongoose**: ORM for MongoDB, making data management easier.
+- **AMQP (amqplib)**: Service communication via RabbitMQ.
 
-52200049_ Mã Lương Khánh
+### 🗄️ Database & Infrastructure
+- **MongoDB**: Stores user and message data.
+- **RabbitMQ**: Message queue system for asynchronous processing.
+- **Nginx**: Load balancer to distribute requests across backend nodes.
+- **Docker Swarm**: Manages containers and ensures scalability.
 
-Lưu ý : Những lệnh có option là không bắt buộc phải làm (chỉ để mở rộng thêm nếu cần thiết).
-Dung lượng image khá lớn nên cần mạng wifi /4g tương đối mạnh để pull chúng về 
-## 1. Kiểm Tra Các Docker Đang Chạy
-Để kiểm tra các dịch vụ đang chạy trong Docker Swarm, sử dụng lệnh sau:
+## ✨ Features
+
+### 🔹 User Side
+✔ Login / Register accounts.
+<br>
+✔ Real-time messaging using **Socket.IO**.
+<br>
+✔ User-friendly interface with fast loading speed.
+
+## 🚀 How to Run the Application
+### 1️⃣ Install Required Tools
+- **Node.js** (for backend and frontend)
+- **Docker & Docker Compose** (for deployment)
+
+# Deployment Guide and Real-Time Chat System Demo with Docker and Docker Swarm
+**Note:** Commands with options are optional (only for advanced configurations).
+The image size is quite large, so a stable WiFi/4G connection is recommended.
+
+## 1. Check Running Docker Services
+To check the running services in Docker Swarm, use:
 ```bash
 docker service ls
 ```
 
-## 2. Tạo Docker Swarm
-Nếu bạn chưa tạo Docker Swarm, hãy sử dụng lệnh sau:
+## 2. Initialize Docker Swarm
+If you haven't initialized Docker Swarm, use:
 ```bash
 docker swarm init
 ```
-Nếu đã tạo trước đó và muốn rời khỏi Docker Swarm, sử dụng lệnh:
+If you want to leave Docker Swarm, use:
 ```bash
-docker swarm leave --force # Nếu là manager
+docker swarm leave --force # If it is a manager node
 ```
 
-## 3. Thêm Worker (Tùy Chọn) : Mặc định khi tạo đã có worker sẵn có 
-Bạn có thể thêm worker vào Swarm nếu cần:
+## 3. Add Worker Nodes (Optional)
+By default, a worker node is available when initializing Swarm. You can add more workers if needed:
 ```bash
 docker swarm join --token <TOKEN> <MANAGER-IP>:2377
 ```
-Ví dụ:
+Example:
 ```bash
 docker swarm join --token SWMTKN-1-... 192.168.65.3:2377
 ```
 
-## 4. Thêm Manager vào Swarm (Option : tùy chọn) : Mặc định khi khởi tạo là node manager
-Để thêm manager vào Swarm, sử dụng lệnh:
+## 4. Add Manager Nodes (Optional)
+To add a manager node to Swarm:
 ```bash
 docker swarm join-token manager
 ```
 
-## 5. Tạo Docker Registry Cục Bộ
-Tạo một registry cục bộ để thay thế Docker Hub trên port 5000:
+## 5. Create a Local Docker Registry
+Set up a local registry to replace Docker Hub on port 5000:
 ```bash
 docker run -d -p 5000:5000 --name local-registry registry:2
 ```
-### Cấu Hình Docker Desktop
-Với Docker Desktop, đi tới **Settings > Docker Engine** và thêm `localhost:5000` vào mục "insecure-registries":
+### Docker Desktop Configuration
+In **Settings > Docker Engine**, add `localhost:5000` to "insecure-registries":
 ```json
 {
   "insecure-registries" : ["localhost:5000"]
 }
 ```
 
-## 6. Xóa Docker Stack Trước Đó nếu Có (Option: tùy chọn): khi khởi tạo nhiều lần cần xóa bản cũ để tránh gây lỗi
-Xóa mạng nếu chúng đã tồn tại trước đó
-Trước khi triển khai dịch vụ mới, hãy xóa stack cũ để tránh gây lỗi:
+## 6. Remove Previous Docker Stack (Optional)
+Before deploying a new stack, remove the old one to avoid conflicts:
 ```bash
 docker stack rm midtermnodejs
 ```
 
-## 7. Xóa Mạng Nếu Tồn Tại (Option: tùy chọn): khi khởi tạo nhiều lần cần xóa bản cũ để tránh gây lỗi
-Xóa mạng nếu chúng đã tồn tại trước đó:
+## 7. Remove Networks If Existing (Optional)
 ```bash
 docker network rm midtermnodejs_frontend-network midtermnodejs_backend-network
 ```
 
-### 8. Cách Build Image
-Có hai cách để xử lý image, nếu đã build trước đó hoặc chưa:
+### 8. Build Docker Images
+You can either build images from scratch or use existing ones.
 
-### 8.1. Chưa Build Image Trước Đó
-Build các image:
+### 8.1. If Images Are Not Built Yet
+Build the images:
 ```bash
 # Build backend
 docker build -t localhost:5000/backend-image ./backend
@@ -85,71 +116,65 @@ docker build -t localhost:5000/frontend-image ./frontend
 # Build nginx
 docker build -t localhost:5000/nginx-image ./nginx
 ```
-### 8.2. Nếu Đã Build Image Trước Đó (Option : Không bắt buộc phải làm) : Nếu bạn đã có các image trong máy , tránh gây lãng phí bộ nhớ 
-Tag image với địa chỉ của registry cục bộ:
+
+### 8.2. If Images Are Already Built (Optional)
+Tag the images with the local registry address:
 ```bash
 docker tag frontend-image localhost:5000/frontend-image:latest
 docker tag backend-image localhost:5000/backend-image:latest
 docker tag nginx-image localhost:5000/nginx-image:latest
 ```
 
-### 9. Pull MongoDB và RabbitMQ : Nếu bạn đã có trước đó không cần pull về nữa
-Pull MongoDB và RabbitMQ từ Docker Hub:
+### 9. Pull MongoDB and RabbitMQ (Skip if Already Available)
 ```bash
 docker pull mongo
 docker pull rabbitmq
 ```
 
-## 10. Push Image Lên Registry Cục Bộ
-Để đẩy các image đã build lên registry cục bộ:
+## 10. Push Images to Local Registry
 ```bash
 docker push localhost:5000/frontend-image:latest
 docker push localhost:5000/backend-image:latest
 docker push localhost:5000/nginx-image:latest
 ```
-## 11. Triển Khai Dịch Vụ Trong Docker Swarm
-Triển khai dịch vụ trong Docker Swarm bằng lệnh:
+
+## 11. Deploy Services in Docker Swarm
 ```bash
 docker stack deploy -c docker-compose.yml midtermnodejs
 ```
-## 12. Mở Rộng Replica
-Mở rộng số lượng replica cho dịch vụ nginx lên 3:
+
+## 12. Scale Replicas
+Increase the number of replicas for Nginx:
 ```bash
 docker service scale midtermnodejs_nginx=3
 ```
 
-## 13. Kiểm Tra Trạng Thái Dịch Vụ
-Kiểm tra trạng thái dịch vụ:
+## 13. Check Service Status
 ```bash
 docker service ps midtermnodejs_nginx
 ```
 
-# 14. Test triển khai hệ thống và thử nghiệm 
-Mở browser để test trên 2 port là
+## 14. Test Deployment & System Functionality
+Open the browser to test:
 ```bash
-http://localhost:3003/login  # Giao diện reactjs để test sản phẩm
-http://localhost/test # Đây là nginx để phân phối tới 2 backend có thể kiểm tra user nào đang onl 
+http://localhost:3003/login  # ReactJS frontend login
+http://localhost/test # Nginx backend distribution
 ```
-Tiến hành đăng ký tài khoản như sau : 
+Register an account:
 ```bash
-http://localhost:3003/register  # Giao diện reactjs để đăng ký tài khoản
+http://localhost:3003/register
 ```
-tài khoản 1 :
+Test accounts:
+- **User 1**
+  - Username: user1
+  - Password: password123
+- **User 2**
+  - Username: user2
+  - Password: password123
 
-Username : user1
+Send messages and refresh the page to experience the system.
 
-password : password123
-___________
-tải khoản 2
-
-Username : user2
-
-password : password123
-_______
-Tiến hành nhắn tin qua lại và load lại sau khi nhắn tin xong để trải nghiệm hệ thống
-
-## 15. Kiểm Tra Sức Khỏe Của Registry
-Sử dụng healthcheck để kiểm tra sức khỏe:
+## 15. Health Check for Registry
 ```yaml
 healthcheck:
   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
@@ -158,41 +183,50 @@ healthcheck:
   retries: 3
 ```
 
-## 16. Dừng Dịch Vụ Trong Docker Swarm (Option) : Sau khi đã trải nghiệm xong và demo xong xóa đi giảm thiểu lãng phí bộ nhớ
-Sau khi thử nghiệm xong, dừng dịch vụ:
+## 16. Stop Docker Swarm Services (Optional)
+To free up resources:
 ```bash
 docker stack rm midtermnodejs
 ```
 
-## 16. Xóa Các Phần Đã Build Trong Dự Án
-Để xóa các phần đã build trong dự án, bạn có thể sử dụng các lệnh sau:
-
-### 16.1. Xóa Docker Registry
-Để xóa registry cục bộ đã tạo:
+## 17. Remove Built Project Components
+### 17.1. Remove Local Docker Registry
 ```bash
 docker stop local-registry
 docker rm local-registry
 ```
 
-### 16.2. Xóa Các Image Đã Build
-Xóa các image đã build mà không ảnh hưởng đến các image khác trong hệ thống:
+### 17.2. Remove Built Images
 ```bash
 docker rmi localhost:5000/frontend-image:latest
 docker rmi localhost:5000/backend-image:latest
 docker rmi localhost:5000/nginx-image:latest
 ```
 
-### 16.3. Xóa Các Container Không Còn Sử Dụng (Option )
-Xóa các container không còn sử dụng:
+### 17.3. Remove Unused Containers (Optional)
 ```bash
 docker container prune
 ```
 
-### 16.4. Xóa Các Volume Không Còn Sử Dụng (Option)
-Xóa các volume không còn sử dụng:
+### 17.4. Remove Unused Volumes (Optional)
 ```bash
 docker volume prune
 ```
-### Xin chân thành cảm ơn thầy và những đọc giả đã ủng hộ sản phẩm và trải nghiệm chúng 
-Cảm ơn thầy rất nhiều đã giúp đỡ nhóm em hoàn thành sản phẩm này
+
+## 📷 Application Interface
+📌 *Screenshots coming soon...*
+
+## 🎥 Watch Detailed Video Guide
+📌 *[Video link (if available)]*
+
+## 👤 Author
+**Thanh Long**
+
+📧 **Contact**: thanhlongndp@gmail.com
+
+## 📜 License
+This project is released under the **MIT** license.
+
 ---
+🚀 *Made with ❤️ by Long*
+
